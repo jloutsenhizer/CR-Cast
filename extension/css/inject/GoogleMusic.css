@@ -1,0 +1,25 @@
+.welcome-box, #overall-container, #playing-box{
+    width: 100% !important;
+    height: 100% !important;
+}
+.welcome-headphones{
+    width: 40.703125% !important;
+    height: 74.4444444444% !important;
+    background-repeat: no-repeat
+}
+
+#playing-album-art{
+    width:100% !important;
+    height:auto !important;
+}
+
+#playing-info-bottom, #playing-info-bottom .progress-back{
+    width:100% !important;
+}
+
+#playing-pause-overlay{
+    left: 50% !important;
+    top: 50% !important;
+    margin-left: -83.5px !important;
+    margin-top: -83.5px !important;
+}

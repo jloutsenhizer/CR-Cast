@@ -1,0 +1,29 @@
+{
+    "name": "CR Cast",
+    "version": "0.6.6",
+    "manifest_version": 2,
+    "description": "Turn your chrome browser into a chromecast receiver!!",
+    "offline_enabled": false,
+    "app": {
+        "background": {
+            "page": "background.html",
+            "persistent": true
+        }
+    },
+    "permissions": [
+        {"socket": [
+            "udp-bind",
+            "udp-send-to",
+            "udp-multicast-membership",
+            "tcp-listen::8008"
+        ]},
+        "webview",
+        "https://clients3.google.com/",
+        "storage"
+    ],
+    "icons":{
+        "256": "img/icon/256.png",
+        "128": "img/icon/128.png"
+    },
+    "minimum_chrome_version":"32"
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CR Cast Management</title>
+    <script type="text/javascript" src="lib/jQuery.js"></script>
+    <script type="text/javascript" src="lib/doTimeout.js"></script>
+    <script type="text/javascript" src="lib/ArrayBufferUtils.js"></script>
+    <script type="text/javascript" src="lib/uuid.js"></script>
+    <script type="text/javascript" src="lib/jstz.js"></script>
+    <script type="text/javascript" src="lib/require.js" data-main="js/management"></script>
+</head>
+<body>
+<a href="https://github.com/jloutsenhizer/CR-Cast" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="img/forkme.png" alt="Fork me on GitHub"></a>
+    <h2>CR Cast Settings</h2>
+    <span>CR Cast is currently <span id="serviceState">stopped</span>. </span><button id="toggleService">Start CR Cast</button><br>
+    <input id="runOnStart" type="checkbox"><span> Start CR Cast when Chrome starts</span><br>
+    <span>CR Cast display name: </span><input id="displayName" type="text"><button id="submitDisplayName">Set</button><br>
+    <input id="useIdleScreen" type="checkbox" checked><span> Enable the idle screen app</span><button id="launchIdleScreen">Launch Idle Screen App Now</button>
+</body>
+</html>

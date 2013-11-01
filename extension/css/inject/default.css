@@ -1,0 +1,14 @@
+body, html{
+    width:100% !important;
+    height:100% !important;
+    overflow:hidden !important;
+}
+*{
+    cursor:none !important;
+}
+@font-face {
+    font-family: 'Open Sans Light';
+    font-style: normal;
+    font-weight: 100;
+    src: local('Open Sans Light'), local('OpenSans-Light'), url(https://themes.googleusercontent.com/static/fonts/opensans/v6/DXI1ORHCpsQm3Vp6mXoaTXhCUOGz7vYGh680lGh-uXM.woff) format('woff');
+}

@@ -1,0 +1,32 @@
+#mask, #info-box{
+    width:100% !important;
+    height:100% !important;
+    overflow:hidden;
+}
+
+#chromecast-bottom{
+    top: auto !important;
+    bottom: 103px !important;
+}
+
+#colorbar-bottom{
+    top: auto !important;
+    bottom: 142px !important;
+}
+
+#title-icon{
+    width: 8.59375% !important;
+    height: 13.1944444444% !important;
+    left: 7.1875% !important;
+    top:16.3888888889% !important;
+}
+
+#rowbox-large-txt{
+    top: auto !important;
+    bottom: 168px !important;
+}
+
+#wifi-box{
+    top: auto !important;
+    bottom: 104px !important;
+}

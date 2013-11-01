@@ -1,0 +1,2 @@
+window.blur();
+window.focus(); 
