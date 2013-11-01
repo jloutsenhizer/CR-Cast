@@ -8,6 +8,15 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         if (options == null) options = {};
         this.app_name = name;
         this.url = url;
+        if (this.url != null && this.url.indexOf("chrome://home") == 0){
+            var query = this.url.substring(this.url.indexOf("?") + 1);
+            var queryParts = query.split("&");
+            for (var i = 0, li = queryParts.length; i < li; i++){
+                var parts = queryParts[i].split("=");
+                if (parts[0] == "remote_url")
+                    this.url = decodeURIComponent(parts[1]);
+            }
+        }
         this.use_channel = options.use_chanel != null ? options.use_channel : false;
         this.allow_empty_post_data = options.allow_empty_post_data != null ? options.allow_empty_post_data : false;
         this.allow_restart = options.allow_restart != null ? options.allow_restart : false;
@@ -373,7 +382,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
     }
 
     ChromecastApp.apps = {};
-    ChromecastApp.idleAppname = "00000000-0000-0000-0000-000000000000";
+    ChromecastApp.idleAppname = null;
 
 
 
@@ -381,11 +390,6 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         ChromecastApp.apps = {};
         if (ChromecastApp.activeApp != null)
             ChromecastApp.activeApp.close(true);
-        new ChromecastApp("00000000-0000-0000-0000-000000000000","https://clients3.google.com/cast/chromecast/home?chs=1",{
-            use_channel: true,
-            allow_empty_post_data: true,
-            allow_restart: true
-        });
         ChromecastApp.idleAppname = config.configuration.idle_screen_app;
         for (var i = 0, li = config.applications.length; i < li; i++){
             new ChromecastApp(config.applications[i]);
