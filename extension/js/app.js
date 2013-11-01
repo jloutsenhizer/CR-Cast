@@ -31,7 +31,7 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                         App.localAddress = result[i].address
                         App.addressList.push({
                             address: result[i].address,
-                            regex: new RegExp("\\b" + result[i].address.substring(0,result[i].address.lastIndexOf(".")) + ".\\d{1,3}\\b")
+                            regex: new RegExp("\\b" + result[i].address.substring(0,result[i].address.lastIndexOf(".")).replace(/\./g,"\\.") + "\\.\\d{1,3}\\b")
                         });
                     }
                 }
