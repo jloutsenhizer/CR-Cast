@@ -11,7 +11,7 @@
         }
 
         webview = $("#appview")[0]
-        if (params.user_agent != null)
+        if (params.user_agent != null && webview.setUserAgentOverride)
             webview.setUserAgentOverride(params.user_agent);
         webview.addEventListener('loadstop', function(e) {
             if (params.css_inject != null)

@@ -1,6 +1,6 @@
 {
     "name": "CR Cast",
-    "version": "0.6.7",
+    "version": "0.6.8",
     "manifest_version": 2,
     "description": "Turn your chrome browser into a chromecast receiver!!",
     "offline_enabled": false,
@@ -25,5 +25,5 @@
         "256": "img/icon/256.png",
         "128": "img/icon/128.png"
     },
-    "minimum_chrome_version":"32"
+    "minimum_chrome_version":"31"
 }

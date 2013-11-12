@@ -2,6 +2,8 @@ chrome.app.runtime.onLaunched.addListener(function(){
     chrome.app.window.create("management.html",{state:"normal",minWidth:640,minHeight:480,id:"CrCastManagement"});
 });
 
+chrome.storage.local.remove("officialDeviceConfig");
+
 require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],function(SSDPServer,WebServer,Responder,ChromecastApp){
     App = {
         httpServer: null,
@@ -60,29 +62,12 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                 App.httpServer.addResponder(ChromecastApp.appConnectionResponder);
                 App.httpServer.addResponder(ChromecastApp.appRemoteResponder);
 
-                chrome.storage.local.get("officialDeviceConfig",function(s){
-                    if (s.officialDeviceConfig != null){
-                        ChromecastApp.loadConfiguration(JSON.parse(s.officialDeviceConfig.substring(4)));
-                    }
-                    $.ajax("https://clients3.google.com/cast/chromecast/device/config",{
-                        dataType:"text",
-                        success:function(data){
-                            App.serviceState = "running";
-                            App.updateConfigRequest = null;
-                            chrome.storage.local.set({"officialDeviceConfig":data});
-                            ChromecastApp.loadConfiguration(JSON.parse(data.substring(4)));
-                            if (App.useIdleScreen && !bootStart)
-                                ChromecastApp.launchApp(ChromecastApp.idleAppname);
-                        },
-                        error:function(){
-                            App.serviceState = "running";
-                            if (App.useIdleScreen && !bootStart)
-                                ChromecastApp.launchApp(ChromecastApp.idleAppname);
-                            App.updateConfigRequest = null;
-                        }
-                    });
 
-
+                App.getCombinedRepositoryData(function(data){
+                    ChromecastApp.loadConfiguration(data);
+                    App.serviceState = "running";
+                    if (App.useIdleScreen && !bootStart)
+                        ChromecastApp.launchApp(ChromecastApp.idleAppname);
                 });
             });
         },
@@ -103,10 +88,11 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                 useIdleScreen: App.useIdleScreen,
                 runOnStart: App.runOnStart
             }});
+            chrome.storage.local.set({"repositories":App.repositories});
 
         },
         loadSettings: function(){
-            chrome.storage.local.get("settings",function(s){
+            chrome.storage.local.get(["settings","repositories"],function(s){
                 if (s.settings != null){
                     App.setFriendlyName(s.settings.name);
                     App.useIdleScreen = s.settings.useIdleScreen;
@@ -119,20 +105,129 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                     App.setFriendlyName("CR Cast");
                     App.persistSettings();
                 }
+                if (s.repositories != null){
+                    App.repositories = s.repositories;
+                }
+                else{
+                    App.repositories = [];
+                    App.repositories.push(makeRepositoryListing("Google Official Repository","https://clients3.google.com/cast/chromecast/device/config",true));
+                    App.persistSettings();
+                }
             });
 
+        },
+        getCombinedRepositoryData: function(callback){
+            var result = makeEmptyRepository();
+
+            function getRepository(i){
+                if (App.repositories[i].active){
+                    getRepositoryData(App.repositories[i].url,function(newData){
+                        result = mergeRepositoryDatas(result,newData);
+                        continueIteration(i+1);
+                    })
+                }
+                else{
+                    continueIteration(i+1);
+                }
+            }
+            function continueIteration(i){
+                if (App.repositories.length > i)
+                    getRepository(i);
+                else
+                    callback(result);
+            }
+            continueIteration(0);
         }
     };
+
+    function makeRepositoryListing(name,url,active){
+        return {
+            name: name,
+            url: url,
+            active: active
+        };
+    }
+
+    function makeEmptyRepository(){
+        return {
+            configuration:{},
+            applications: []
+        }
+    }
+
+    function mergeRepositoryDatas(data1,data2){
+        var result = makeEmptyRepository();
+        if (data2.configuration != null && data2.configuration.idle_screen_app != null)
+            result.configuration.idle_screen_app = data2.configuration.idle_screen_app;
+        else if (data1.configuration.idle_screen_app != null)
+            result.configuration.idle_screen_app = data1.configuration.idle_screen_app;
+        for (var i = 0, li = data2.applications.length; i < li; i++){
+            var app = data2.applications[i];
+            var appCopy = {};
+            for (var member in app){
+                appCopy[member] = app[member];
+            }
+            result.applications.push(appCopy);
+        }
+        for (var i = 0, li = data1.applications.length; i < li; i++){
+            var app = data2.applications[i];
+            for (var j = 0, lj = data2.applications.length; j < lj; j++){
+                if (data2.applications[j].app_name == app.app_name)
+                    break;
+            }
+            if (j == data2.applications.length){
+                var appCopy = {};
+                for (var member in app){
+                    appCopy[member] = app[member];
+                }
+                result.applications.push(appCopy);
+            }
+        }
+        return result;
+    }
+
+    function getRepositoryData(url,callback){
+        var hash = Sha1.hash(url,true);
+        $.ajax(url,{
+            dataType: "text",
+            success: function(data){
+                var object = {};
+                object[hash] = data;
+                chrome.storage.local.set(object);
+                callback(parseRepositoryData(data));
+            },
+            error: function(data){
+                chrome.storage.local.get(hash,function(s){
+                    if (s[hash] == null){
+                        callback(parseRepositoryData(""));
+                    }
+                    else{
+                        callback(parseRepositoryData(s[hash]));
+                    }
+                });
+            }
+        })
+    }
+
+    function parseRepositoryData(data){
+        try{
+            return JSON.parse(data.substring(data.indexOf("{"),data.lastIndexOf("}") + 1));
+        }
+        catch (error){
+            return {applicatoins:[]};
+        }
+
+    }
 
 
     App.setFriendlyName('CR Cast');
     App.loadSettings();
 
     window.addEventListener("message", function(messageEvent){
-        var message = JSON.parse(messageEvent.data);
+        var message = messageEvent.data;
         switch (message.type){
             case "GET_STATE":
-                messageEvent.source.postMessage(JSON.stringify({
+                messageEvent.source.postMessage({
                     type: "APP_STATE",
                     app_state: {
                         serviceState: App.serviceState,
@@ -141,7 +236,13 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                         useIdleScreen: App.useIdleScreen,
                         runOnStart: App.runOnStart
                     }
-                }),"*");
+                },"*");
+                break;
+            case "GET_REPOSITORY_LIST":
+                messageEvent.source.postMessage({
+                    type: "REPOSITORY_LIST",
+                    repositories: App.repositories
+                },"*");
                 break;
             case "START_SERVICE":
                 App.startService(false);

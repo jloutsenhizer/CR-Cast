@@ -1,4 +1,7 @@
 define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
+
+    var canSupportYoutube = document.createElement("webview").setUserAgentOverride != null;
+
     var ChromecastApp = function(name,url,options){
         if (typeof name == "object"){
             options = name;
@@ -32,6 +35,10 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         this.pingInterval = 0;
         if (this.external){
             console.error("Can't support external apps! Didn't load " + this.app_name);
+            return;
+        }
+        if (this.app_name == "YouTube" && !canSupportYoutube){
+            console.error("API needed for YouTube to work is missing! Didn't load " + this.app_name);
             return;
         }
         if (ChromecastApp.apps[this.app_name] != null){

@@ -73,7 +73,7 @@ $(document).ready(function(){
     })
 
     window.addEventListener("message", function(messageEvent){
-        var message = JSON.parse(messageEvent.data);
+        var message = messageEvent.data;
         switch (message.type){
             case "APP_STATE":
                 app_state = message.app_state;
@@ -119,6 +119,9 @@ $(document).ready(function(){
                     runOnStart[0].checked = app_state.runOnStart;
                 }
                 break;
+            case "REPOSITORY_LIST":
+                console.log(message.repositories);
+                break;
         }
     });
 
@@ -126,14 +129,18 @@ $(document).ready(function(){
 
     chrome.runtime.getBackgroundPage(function(backgroundWindow){
         sendMessage = function(message){
-            backgroundWindow.postMessage(JSON.stringify(message),"*");
+            backgroundWindow.postMessage(message,"*");
         }
         var getStateMessage = {
             type: "GET_STATE"
         };
+        var getRepositoriesMessage = {
+            type: "GET_REPOSITORY_LIST"
+        };
         sendMessage(getStateMessage);
         $.doTimeout(50,function(){//setup state polling
             sendMessage(getStateMessage);
+            sendMessage(getRepositoriesMessage);
             return true;
         })
 
