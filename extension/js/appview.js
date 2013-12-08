@@ -10,6 +10,10 @@
             params[parts[0]] = decodeURIComponent(parts[1]);
         }
 
+        if (params.remote_url == "https://clients3.google.com/cast/chromecast/home?chs=1"){
+            params.remote_url = "https://clients3.google.com/cast/chromecast/home/v/c9541b08";
+        }
+
         webview = $("#appview")[0]
         if (params.user_agent != null && webview.setUserAgentOverride)
             webview.setUserAgentOverride(params.user_agent);

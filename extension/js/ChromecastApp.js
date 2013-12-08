@@ -67,7 +67,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         }
     });
 
-    var userAgent = "Mozilla/5.0 (CrKey - 0.9.3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1573.2 Safari/537.36";
+    var userAgent = "Mozilla/5.0 (CrKey armv7l 1.3.14651) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.0 Safari/537.36";
 
     ChromecastApp.prototype.launch = function(postData,onLaunched){
         if (postData == null) postData = "";
