@@ -1,6 +1,6 @@
 define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
 
-    var canSupportYoutube = document.createElement("webview").setUserAgentOverride != null;
+    var canSupportYoutube = true || document.createElement("webview").setUserAgentOverride != null;
 
     var ChromecastApp = function(name,url,options){
         if (typeof name == "object"){
