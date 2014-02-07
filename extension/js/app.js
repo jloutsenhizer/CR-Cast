@@ -4,7 +4,7 @@ chrome.app.runtime.onLaunched.addListener(function(){
 
 chrome.storage.local.remove("officialDeviceConfig");
 
-require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],function(SSDPServer,WebServer,Responder,ChromecastApp){
+require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp", "MDNSServer"],function(SSDPServer,WebServer,Responder,ChromecastApp, MDNSServer){
     App = {
         httpServer: null,
         ssdpServer: null,
@@ -39,6 +39,7 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                 }
                 App.httpServer = new WebServer("0.0.0.0",8008,true);
                 App.ssdpServer = new SSDPServer();
+                App.mdnsServer = new MDNSServer();
 
                 App.httpServer.addResponder(new Responder("/ssdp/device-desc.xml",["GET"],function(request){
                     var response = request.webserver.createHTTPResponse();
@@ -77,8 +78,10 @@ require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp"],functio
                     ChromecastApp.activeApp.close(true);
                 App.httpServer.stop();
                 App.ssdpServer.stop();
+                App.mdnsServer.stop();
                 App.httpServer = null;
                 App.ssdpServer = null;
+                App.mdnsServer = null;
                 App.serviceState = "stopped";
             }
         },
