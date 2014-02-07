@@ -83,6 +83,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
                 + "&user_agent=" + encodeURIComponent(userAgent),{state:appLaunchMode == "inherit" ? oldAppMode : appLaunchMode, bounds:oldBounds},function(window){
                 that.window = window;
                 ChromecastApp.activeApp = that;
+                that.state = "running";
                 onLaunched();
 
                 that.window.onClosed.addListener(function(){
@@ -171,11 +172,13 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
 
             response.content += "  <servicedata xmlns='urn:chrome.google.com:cast'>\r\n";
             response.content += "    <connectionSvcURL>http://" + request.headers["Host"]  + "/connection/" + this.app_name + "</connectionSvcURL>\r\n";
-            response.content += "    <protocols>\r\n";
-            for (var i = 0, li = this.protocols.length; i < li; i++){
-                response.content += "      <protocol>" + this.protocols[i] + "</protocol>\r\n"
+            if (this.protocols != null){
+                response.content += "    <protocols>\r\n";
+                for (var i = 0, li = this.protocols.length; i < li; i++){
+                    response.content += "      <protocol>" + this.protocols[i] + "</protocol>\r\n"
+                }
+                response.content += "    </protocols>\r\n";
             }
-            response.content += "    </protocols>\r\n";
             response.content += "  </servicedata>\r\n"
         }
         response.content += '  <state>' + this.state + '</state>\r\n';
@@ -312,7 +315,6 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
                     that.launchNum = appLaunchCount;
                     that.protocols = data.protocols;
                     that.webConnectionSocket = socket;
-                    that.state = "running";
                     that.pingInterval = data.pingInterval
 
                     //create channel for chromecast to communicate on
@@ -404,7 +406,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
 
     }
 
-    ChromecastApp.appXMLResponder = new Responder(/\/apps\/[^\/]/,["GET"],function(request){
+    ChromecastApp.appXMLResponder = new Responder(/\/apps\/[^\/]+/,["GET"],function(request){
         var appName = request.path.substring("/apps/".length);
         var requestedApp = ChromecastApp.apps[appName];
         if (requestedApp == null){
@@ -418,7 +420,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         }
     });
 
-    ChromecastApp.activeAppResponder = new Responder("/apps",["GET"],function(request){
+    ChromecastApp.activeAppResponder = new Responder(/\/apps\/?/,["GET"],function(request){
         var response = request.webserver.createHTTPResponse();
         if (ChromecastApp.activeApp != null){
             response.setCode("302");
