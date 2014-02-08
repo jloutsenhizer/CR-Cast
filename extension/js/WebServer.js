@@ -134,7 +134,7 @@ define(["WebRequestResponder"],function(WebRequestResponder){
     WebServer.prototype.sendResponse = function(request,response){
         response.generateHeaders();
         chrome.socket.write(request.socketId,response.toArrayBuffer(),function(result){
-            if (request.headers["Connection"].toLowerCase() == "keep-alive"){
+            if (request.headers["Connection"] != null && request.headers["Connection"].toLowerCase() == "keep-alive"){
                 request.webserver._readData(request.socketId);
             }
             else{

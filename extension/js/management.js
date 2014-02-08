@@ -120,7 +120,6 @@ $(document).ready(function(){
                 }
                 break;
             case "REPOSITORY_LIST":
-                console.log(message.repositories);
                 break;
         }
     });
