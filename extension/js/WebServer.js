@@ -15,7 +15,7 @@ define(["WebRequestResponder"],function(WebRequestResponder){
                         }
                         return;
                     }
-                    that.port = 8008;
+                    that.port = port;
                     that.stopped = false;
                     chrome.socket.accept(that.socketId,function(acceptInfo){
                         that._onAccept(acceptInfo);
