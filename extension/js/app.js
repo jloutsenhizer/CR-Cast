@@ -4,6 +4,8 @@ chrome.app.runtime.onLaunched.addListener(function(){
 
 chrome.storage.local.remove("officialDeviceConfig");
 
+//TODO: v2 needs TCP server on 8009 but it's not an HTTP server, uses "casts://" protocol, proprietary?
+
 require(["SSDPServer","WebServer","WebRequestResponder","ChromecastApp", "MDNSServer"],function(SSDPServer,WebServer,Responder,ChromecastApp, MDNSServer){
     App = {
         httpServer: null,

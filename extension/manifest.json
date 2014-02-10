@@ -15,7 +15,8 @@
             "udp-bind",
             "udp-send-to",
             "udp-multicast-membership",
-            "tcp-listen::8008"
+            "tcp-listen::8008",
+            "tcp-listen::8009"
         ]},
         "webview",
         "https://clients3.google.com/",
