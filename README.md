@@ -7,4 +7,7 @@ Chromecast Emulator for Google Chrome
 
 There appears to be an implementation in node, which could be helpful for someone with the time to update CR-Cast based on that: https://github.com/thibauts/node-castv2
 
+An Implementation of a cast client can be found in chromium:
+http://src.chromium.org/viewvc/chrome/trunk/src/extensions/browser/api/cast_channel/
+
 Documentation of the Chromecast Implementation can be found [here](https://github.com/jloutsenhizer/CR-Cast/wiki/Chromecast-Implementation-Documentation-WIP)
