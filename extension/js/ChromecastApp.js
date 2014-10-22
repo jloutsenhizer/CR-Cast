@@ -2,15 +2,10 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
 
     var canSupportYoutube = true || document.createElement("webview").setUserAgentOverride != null;
 
-    var ChromecastApp = function(name,url,options){
-        if (typeof name == "object"){
-            options = name;
-            name = options.app_name;
-            url = options.url;
-        }
-        if (options == null) options = {};
-        this.app_name = name;
-        this.url = url;
+    var ChromecastApp = function(appConfig){
+        this.app_name = appConfig.app_id;
+        this.display_name = appConfig.display_name != null ? appConfig.display_name : this.app_name;
+        this.url = appConfig.url;
         if (this.url != null && this.url.indexOf("chrome://home") == 0){
             var query = this.url.substring(this.url.indexOf("?") + 1);
             var queryParts = query.split("&");
@@ -20,10 +15,11 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
                     this.url = decodeURIComponent(parts[1]);
             }
         }
-        this.use_channel = options.use_chanel != null ? options.use_channel : false;
-        this.allow_empty_post_data = options.allow_empty_post_data != null ? options.allow_empty_post_data : false;
-        this.allow_restart = options.allow_restart != null ? options.allow_restart : false;
-        this.external = options.external != null ? options.external : false;
+        this.use_channel = appConfig.use_chanel != null ? appConfig.use_channel : false;
+        this.allow_empty_post_data = appConfig.allow_empty_post_data != null ? appConfig.allow_empty_post_data : false;
+        this.allow_restart = appConfig.allow_restart != null ? appConfig.allow_restart : false;
+        this.external = appConfig.external != null ? appConfig.external : false;
+        this.dial_enabled = appConfig.dial_enabled != null ? appConfig.dial_enabled : false;
         this.window = null;
         this.state = "stopped";
         this.remotes = [];
@@ -34,15 +30,15 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         this.receiverId = 0;
         this.pingInterval = 0;
         if (this.external){
-            console.error("Can't support external apps! Didn't load " + this.app_name);
+            console.error("Can't support external apps! Didn't load " + this.display_name);
             return;
         }
         if (this.app_name == "YouTube" && !canSupportYoutube){
-            console.error("API needed for YouTube to work is missing! Didn't load " + this.app_name);
+            console.error("API needed for YouTube to work is missing! Didn't load " + this.display_name);
             return;
         }
         if (ChromecastApp.apps[this.app_name] != null){
-            console.error("Already have app by name " + this.app_name);
+            console.error("Already have app by name " + this.app_name + ". Didn't load " + this.display_name);
             return;
         }
         ChromecastApp.apps[this.app_name] = this;
@@ -403,6 +399,11 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
         for (var i = 0, li = config.applications.length; i < li; i++){
             new ChromecastApp(config.applications[i]);
         }
+        for (var i = 0, li = config.enabled_app_ids.length; i < li; i++) {
+            if (ChromecastApp.apps[config.enabled_app_ids[i]] === undefined){
+                ChromecastApp.apps[config.enabled_app_ids[i]] = null;
+            }
+        }
 
     }
 
@@ -588,7 +589,7 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
             wpa_configured: true,
             timezone: jstz.determine().name(),
             signal_level: 0
-        }
+        };
 
         response.content = JSON.stringify(eureka_info);
         request.webserver.sendResponse(request,response);
@@ -597,8 +598,34 @@ define(["WebRequestResponder","WebSocket"],function(Responder,WebSocket){
     ChromecastApp.activeApp = null;
 
     ChromecastApp.launchApp = function(appName){
-        ChromecastApp.apps[appName].launch();
-    }
+        if (ChromecastApp.apps[appName] === undefined){
+            console.error("attempted to launch blacklisted/undefined app");
+            return;
+        }
+        if (ChromecastApp.apps[appName] == null){
+            console.log("Fetching: " + appName);
+            $.ajax("https://clients3.google.com/cast/chromecast/device/app?a=" + appName,{
+                dataType: "text",
+                success:function(data){
+                    new ChromecastApp(JSON.parse(data.substring(data.indexOf("{"),data.lastIndexOf("}") + 1)));
+                    if (ChromecastApp.apps[appName] != null){
+                        console.log("Launching: " + appName);
+                        ChromecastApp.apps[appName].launch();
+                    }
+                    else
+                        console.error("unable to load the app");
+                },
+                error: function(){
+                    console.error(arguments);
+                }
+            });
+        }
+        else {
+            console.log("Launching: " + appName);
+            ChromecastApp.apps[appName].launch();
+        }
+
+    };
 
     return ChromecastApp
 

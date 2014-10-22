@@ -11,15 +11,27 @@ define(function(){
             that.socketId = createInfo.socketId;
             chrome.socket.setMulticastTimeToLive(that.socketId,20,function(result){
                 chrome.socket.setMulticastLoopbackMode(that.socketId,true,function(result){
-                    chrome.socket.bind(that.socketId,"0.0.0.0",MDNS_PORT,function(result){
-                        chrome.socket.joinGroup(that.socketId,MDNS_ADDRESS,function(result){
-                            that.running = true;
-                            that._listen();
-                            if (onReady != null)
-                                onReady();
+                    (function bindPort(){
+                        chrome.socket.bind(that.socketId,"0.0.0.0",MDNS_PORT,function(result){
+                            if (result != 0){
+                                console.error("failed to bind udp " + MDNS_PORT + " for mDNS");
+                                console.log("retying in 5 seconds")
+                                $.doTimeout(5000,function(){
+                                    bindPort();
+                                });
+                            }
+                            else{
+                                chrome.socket.joinGroup(that.socketId,MDNS_ADDRESS,function(result){
+                                    that.running = true;
+                                    that._listen();
+                                    if (onReady != null)
+                                        onReady();
 
+                                });
+                            }
                         });
-                    });
+
+                    })();
                 }) ;
             });
 
